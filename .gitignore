@@ -31,4 +31,9 @@ baseline/mmdetection/mmdet/core/hook/*
 #Dataset에서 train, test, 임시파일들은 제거
 dataset/train
 dataset/test 
+dataset/train.json
+dataset/test.json
 dataset/_*
+
+#Sample submission 제외 
+sample_submission
