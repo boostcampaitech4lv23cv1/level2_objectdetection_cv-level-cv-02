@@ -1,0 +1,34 @@
+.*
+!.gitignore
+!baseline/*
+
+#Detectron / vanila model은 일단 제외
+baseline/detectron2
+baseline/faster_rcnn
+baseline/.empty 
+baseline/.ipynb_checkpoints
+baseline/.DS_Store
+
+#mmdetection은 일단 포함후 다시 제거 예정
+!baseline/mmdetection 
+
+
+#최종적으로는, wandblogger_hook만 이용
+baseline/mmdetection/*
+!baseline/mmdetection/mmdet
+baseline/mmdetection/mmdet/*
+!baseline/mmdetection/mmdet/core
+baseline/mmdetection/mmdet/core/*
+!baseline/mmdetection/mmdet/core/hook
+baseline/mmdetection/mmdet/core/hook/*
+!baseline/mmdetection/mmdet/core/hook/wandblogger_hook.py
+
+#우리의 코드도 포함시켜주자
+!baseline/mmdetection/train.py 
+!baseline/mmdetection/inference.py
+
+
+#Dataset에서 train, test, 임시파일들은 제거
+dataset/train
+dataset/test 
+dataset/_*
