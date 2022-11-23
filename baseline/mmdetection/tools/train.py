@@ -133,7 +133,7 @@ def preprocess_config(cfg):
     cfg.data.test.img_prefix = IMG_ROOT
 
     #(TODO) multi-scale 고려하여 바꾸기
-    #   TTA 시 bbox 좌표 등이 바뀔 수 있으나, 일단은 이 곳에 고정
+    # TTA 시 bbox 좌표 등이 바뀔 수 있으나, 일단은 이 곳에 고정
     cfg.data.test.ann_file = TEST_ROOT + "test.json"
     # cfg.data.train.pipeline[2]['img_scale'] = RESIZE # Resize
     cfg.data.val.pipeline[1]['img_scale'] = RESIZE # Resize
