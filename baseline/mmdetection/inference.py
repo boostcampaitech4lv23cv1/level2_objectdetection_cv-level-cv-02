@@ -16,24 +16,26 @@ classes = ("General trash", "Paper", "Paper pack", "Metal", "Glass",
            "Plastic", "Styrofoam", "Plastic bag", "Battery", "Clothing")
 
 # config file 들고오기
-cfg = Config.fromfile('./configs/swin/mask_rcnn_swin-t-p4-w7_fpn_1x_coco.py')
+cfg = Config.fromfile('./configs/swin/custom_swin_large.py')
+
+
+RESIZE = (1024,1024)
 
 root='../../dataset/'
-
-epoch = 'epoch_24'
+epoch = 'epoch_12'
 
 # dataset config 수정
 cfg.data.test.classes = classes
 cfg.data.test.img_prefix = root
 cfg.data.test.ann_file = root + 'test.json'
-cfg.data.test.pipeline[1]['img_scale'] = (512,512) # Resize
+cfg.data.test.pipeline[1]['img_scale'] = RESIZE # Resize
 cfg.data.test.test_mode = True
 
 cfg.data.samples_per_gpu = 4
 
 cfg.seed=2021
 cfg.gpu_ids = [1]
-cfg.work_dir = './work_dirs/faster_rcnn_r50_fpn_1x_trash'
+cfg.work_dir = './work_dirs/faster_rcnn_r50_fpn_1x_trash/swin_large'
 
 def set_model_config(cfg: Config) -> None:
     #   현재까지는 Faster RCNN, Cascade RCNN만 되는 것을 확인
@@ -103,5 +105,5 @@ for i, out in enumerate(output):
 submission = pd.DataFrame()
 submission['PredictionString'] = prediction_strings
 submission['image_id'] = file_names
-submission.to_csv(os.path.join(cfg.work_dir, f'submission_{epoch}.csv'), index=None)
+submission.to_csv(os.path.join(cfg.work_dir, f'submission_{epoch}_swinL.csv'), index=None)
 submission.head()
