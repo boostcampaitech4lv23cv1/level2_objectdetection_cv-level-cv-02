@@ -27,7 +27,7 @@ IMG_ROOT  = "../../dataset"
 TEST_ROOT = "../../dataset"
 CLASSES = ("General trash", "Paper", "Paper pack", "Metal", "Glass", 
            "Plastic", "Styrofoam", "Plastic bag", "Battery", "Clothing")
-RESIZE = (512,512)
+RESIZE = (1024,1024)
 ####추가####
 
 def parse_args():
@@ -142,16 +142,20 @@ def preprocess_config(cfg):
     #(TODO) 더욱 robust한 model config 설정
 
     #In case of faster RCNN(baseline) : Dict
-    if type(cfg.model.roi_head.bbox_head) == dict:
-        cfg.model.roi_head.bbox_head.num_classes = 10
+    if hasattr(cfg.model, "roi_head"):
+        if type(cfg.model.roi_head.bbox_head) == dict:
+            cfg.model.roi_head.bbox_head.num_classes = 10
 
-    #In case of cascade RCNN : List[Dict]
-    elif type(cfg.model.roi_head.bbox_head) == list:
-        for each_head in cfg.model.roi_head.bbox_head:
-            if hasattr(each_head, "num_classes"):
-                each_head.num_classes = 10 
-            else: 
-                raise Exception("Num_classes가 없습니다. 제대로 찾으셨나요?")
+        #In case of cascade RCNN : List[Dict]
+        elif type(cfg.model.roi_head.bbox_head) == list:
+            for each_head in cfg.model.roi_head.bbox_head:
+                if hasattr(each_head, "num_classes"):
+                    each_head.num_classes = 10 
+                else: 
+                    raise Exception("Num_classes가 없습니다. 제대로 찾으셨나요?")
+    else:
+        raise Exception("ROI_head가 없는 모델을 선택하셨습니다. 그에 걸맞게 num_classes를 바꿔주시기 바랍니다.")
+
 
     cfg.log_config.hooks = [
         dict(type='TextLoggerHook'),
@@ -168,7 +172,7 @@ def preprocess_config(cfg):
         ]
 
     #(TODO) samples_per_gpu  argparse로 바꾸기
-    cfg.data.samples_per_gpu = 4
+    cfg.data.samples_per_gpu = 3
     cfg.optimizer_config.grad_clip = dict(max_norm=35, norm_type=2)
     cfg.checkpoint_config = dict(max_keep_ckpts=3, interval=3)
     
