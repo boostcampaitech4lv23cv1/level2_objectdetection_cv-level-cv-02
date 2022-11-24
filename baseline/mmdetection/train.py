@@ -17,7 +17,7 @@ import plotly
 """
 
 # config file 들고오기
-cfg = Config.fromfile('./configs/swin/mask_rcnn_swin-t-p4-w7_fpn_1x_coco.py')
+cfg = Config.fromfile('./configs/swin/custom_swin_large.py')
 cfg.dataset_type = "CocoDataset"
 
 #(TODO) 절대 안 바뀔 상수들이 뭔지 생각하고, 그를 상수처럼 정의하기
@@ -59,11 +59,14 @@ Data Augmentation
 - Model이 여러 scale로 학습되었다면, 이를 고려해보기
 """
 
+
+RESIZE = (1024,1024)
+
 def set_augmentation_config(cfg: Config) -> None:
     #   Augmentation은 train-pipeline, val-pipeline, tset-pipeline을 어찌 정의하느냐에 따라 계속 바뀔 수 있음.
-    cfg.data.train.pipeline[2]['img_scale'] = (512,512) # Resize
-    cfg.data.val.pipeline[1]['img_scale'] = (512,512) # Resize
-    cfg.data.test.pipeline[1]['img_scale'] = (512,512) # Resize
+    #cfg.data.train.pipeline[2]['img_scale'] = RESIZE # Resize
+    cfg.data.val.pipeline[1]['img_scale'] = RESIZE # Resize
+    cfg.data.test.pipeline[1]['img_scale'] = RESIZE # Resize
     
 
 """
@@ -93,7 +96,6 @@ def set_model_config(cfg: Config) -> None:
                 each_head.num_classes = 10 
             else: 
                 raise Exception("Num_classes가 없습니다. 제대로 찾으셨나요?")
-
 """
 Training config
 
@@ -106,16 +108,18 @@ Training config
 """
 
 def set_train_config(cfg: Config) -> None:
-    cfg.data.samples_per_gpu = 4
+    cfg.data.samples_per_gpu = 3
     cfg.seed = 2022
     cfg.gpu_ids = [0]
-    cfg.work_dir = './work_dirs/faster_rcnn_r50_fpn_1x_trash'
+    cfg.work_dir = './work_dirs/faster_rcnn_r50_fpn_1x_trash/swin_large'
     cfg.optimizer_config.grad_clip = dict(max_norm=35, norm_type=2)
     cfg.checkpoint_config = dict(max_keep_ckpts=3, interval=3)
     cfg.device = get_device()
 
     #Runner를 통해 epochs를 조절 가능
     cfg.runner.max_epochs = 12
+
+    cfg.resume_from = "work_dirs/faster_rcnn_r50_fpn_1x_trash/from_6_epoch.pth"
 
     #Metric 지정하는 부분, List로 선언시 list 안의 metric들에 대하여 각각 evaluate하여 터미널 창에다가 보여줌.
     cfg.evaluation.metric = ["bbox"]
@@ -137,10 +141,10 @@ def set_hook_config(cfg: Config) -> None:
             'project': 'mmdetection' , 
             "tags" : ["practice_wandb_first"]
             },
-            interval=1,
+            interval=50,
             log_checkpoint=True,
             log_checkpoint_metadata=True,
-            num_eval_images=100,
+            num_eval_images=30,
             bbox_score_thr=0.3),
         ]
 
@@ -161,7 +165,6 @@ def train_default(cfg: Config) -> None:
     train_root = "../../dataset"
     cfg.data.train.ann_file = train_root + "train.json" #train json 정보
 
-
 def train_val_split(cfg, kfold = False, foldnum= ""):
     # train과 valid가 나뉘어졌다면, 이 함수를 실행시킨다
     if kfold and not foldnum:
@@ -173,7 +176,6 @@ def train_val_split(cfg, kfold = False, foldnum= ""):
         train_root='../../dataset/groupskfold/'
         cfg.data.train.ann_file = train_root + 'train_fold0.json' # train json 정보
         cfg.data.val.ann_file = train_root + 'valid_fold0.json' # valid json 정보
-
 
 def set_everything_config(cfg, default = False, train_split = True, kfold = False):
     set_data_prepare_config(cfg)
@@ -192,8 +194,8 @@ def set_everything_config(cfg, default = False, train_split = True, kfold = Fals
         train_val_split(cfg)
     
     elif kfold:
-        return True
-    return False
+        return cfg
+    return cfg
 
 
 def single_train(cfg):

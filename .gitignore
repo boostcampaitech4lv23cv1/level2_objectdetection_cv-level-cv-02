@@ -37,3 +37,18 @@ dataset/_*
 
 #Sample submission 제외 
 sample_submission
+
+#라이브러리 제외
+efficientdet-pytorch
+effdet/
+
+#이건 제외
+!baseline/mmdetection/tools/ 
+baseline/mmdetection/tools/* 
+!baseline/mmdetection/tools/train.py
+!baseline/mmdetection/tools/test.py
+
+#Our configs
+!baseline/mmdetection/configs/
+baseline/mmdetection/configs/* 
+!baseline/mmdetection/configs/
