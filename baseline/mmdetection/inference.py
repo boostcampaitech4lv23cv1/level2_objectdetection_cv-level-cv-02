@@ -16,7 +16,7 @@ classes = ("General trash", "Paper", "Paper pack", "Metal", "Glass",
            "Plastic", "Styrofoam", "Plastic bag", "Battery", "Clothing")
 
 # config file 들고오기
-cfg = Config.fromfile('./configs/swin/custom_swin_large.py')
+cfg = Config.fromfile('./configs/tood/tood_swinL_fpn.py')
 
 
 RESIZE = (1024,1024)
@@ -39,18 +39,19 @@ cfg.work_dir = './work_dirs/faster_rcnn_r50_fpn_1x_trash/swin_large'
 
 def set_model_config(cfg: Config) -> None:
     #   현재까지는 Faster RCNN, Cascade RCNN만 되는 것을 확인
-
+    
     #In case of faster RCNN(baseline) : Dict
-    if type(cfg.model.roi_head.bbox_head) == dict:
-        cfg.model.roi_head.bbox_head.num_classes = 10
+    if hasattr(cfg.model, "roi_head"):
+        if type(cfg.model.roi_head.bbox_head) == dict:
+            cfg.model.roi_head.bbox_head.num_classes = 10
 
-    #In case of cascade RCNN : List[Dict]
-    elif type(cfg.model.roi_head.bbox_head) == list:
-        for each_head in cfg.model.roi_head.bbox_head:
-            if hasattr(each_head, "num_classes"):
-                each_head.num_classes = 10 
-            else: 
-                raise Exception("Num_classes가 없습니다. 제대로 찾으셨나요?")
+        #In case of cascade RCNN : List[Dict]
+        elif type(cfg.model.roi_head.bbox_head) == list:
+            for each_head in cfg.model.roi_head.bbox_head:
+                if hasattr(each_head, "num_classes"):
+                    each_head.num_classes = 10 
+                else: 
+                    raise Exception("Num_classes가 없습니다. 제대로 찾으셨나요?")
 
 
 

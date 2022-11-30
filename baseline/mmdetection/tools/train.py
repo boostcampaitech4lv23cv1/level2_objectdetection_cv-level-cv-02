@@ -30,6 +30,8 @@ CLASSES = ("General trash", "Paper", "Paper pack", "Metal", "Glass",
 RESIZE = (1024,1024)
 ####추가####
 
+torch.cuda.empty_cache()
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
     parser.add_argument('config', help='train config file path')
@@ -153,8 +155,8 @@ def preprocess_config(cfg):
                     each_head.num_classes = 10 
                 else: 
                     raise Exception("Num_classes가 없습니다. 제대로 찾으셨나요?")
-    else:
-        raise Exception("ROI_head가 없는 모델을 선택하셨습니다. 그에 걸맞게 num_classes를 바꿔주시기 바랍니다.")
+    # else:
+    #     raise Exception("ROI_head가 없는 모델을 선택하셨습니다. 그에 걸맞게 num_classes를 바꿔주시기 바랍니다.")
 
 
     cfg.log_config.hooks = [
