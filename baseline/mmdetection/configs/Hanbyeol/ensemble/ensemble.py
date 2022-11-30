@@ -2,7 +2,7 @@ from ensemble_boxes import *
 import csv 
 import argparse 
 
-from tqsm import tqsm
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='ensemble') 
 parser.add_argument('--csv_files', '--names-list', nargs='+', default=[])   # list of strings(file names)
@@ -34,7 +34,7 @@ iou_thresh = 0.55
 skip_box_thresh = 0.3
 
 wbf_label, wbf_score, wbf_box = [], [], []
-for i in range(1, num_img): # for number of images
+for i in tqdm(range(1, num_img)): # for number of images
     label, score, box = [[]]*num_files, [[]]*num_files, [[]]*num_files
 
     for j in range(num_files): # for number of inference files 
@@ -65,7 +65,3 @@ for i in range(num_img-1):
             s += str(wbf_box[i][j][k] * 1024) + ' '
 
     writer.writerow([s, 'test/{0:04d}.jpg'.format(i)])
-
-
-
-
