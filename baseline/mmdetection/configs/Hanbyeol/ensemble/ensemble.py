@@ -2,6 +2,8 @@ from ensemble_boxes import *
 import csv 
 import argparse 
 
+from tqsm import tqsm
+
 parser = argparse.ArgumentParser(description='ensemble') 
 parser.add_argument('--csv_files', '--names-list', nargs='+', default=[])   # list of strings(file names)
 parser.add_argument('--weights', nargs='+', type=int)                       # list of integers 
