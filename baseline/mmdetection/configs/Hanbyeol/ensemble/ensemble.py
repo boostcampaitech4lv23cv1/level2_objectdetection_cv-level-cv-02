@@ -1,7 +1,11 @@
-from ensemble_boxes import *
-import csv 
-import argparse 
+import os
+import pandas as pd
+import numpy as np
 
+from ensemble_boxes import *
+import argparse
+
+from pycocotools.coco import COCO
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='ensemble') 
@@ -13,55 +17,73 @@ parser.add_argument('--IoU_thresh', type=float, default=0.55)
 
 args = parser.parse_args() 
 
+submission_files = list(args.csv_files)
 
-# open inference files 
-inference = [] 
-for file in args.csv_files: 
-    f = open(file, 'r')
-    data = list(csv.reader(f, delimiter=","))
-    inference.append(data)
-    f.close()
+submission_df = [pd.read_csv(file) for file in submission_files]
+image_ids = submission_df[0]['image_id'].tolist()
+
+# ensemble 할 file의 image 정보를 불러오기 위한 json
+annotation = '/opt/ml/dataset/test.json'
+coco = COCO(annotation)
+prediction_strings = []
+file_names = []
 
 # get weights 
 weights = list(args.weights)
 
+skip_box_thr = args.skip_box_thresh
+iou_thr = args.IoU_thresh
 
-# divide inference into label / score / box lists
-num_files = len(inference)
-num_img = len(inference[0])
+# 각 image id 별로 submission file에서 box좌표 추출
+for i, image_id in tqdm(enumerate(image_ids)):
+    prediction_string = ''
+    boxes_list = []
+    scores_list = []
+    labels_list = []
+    image_info = coco.loadImgs(i)[0]
 
-iou_thresh = 0.55
-skip_box_thresh = 0.3
+#     각 submission file 별로 prediction box좌표 불러오기
+    for df in submission_df:
+        predict_string = df[df['image_id'] == image_id]['PredictionString'].tolist()[0]
+        predict_list = str(predict_string).split()
 
-wbf_label, wbf_score, wbf_box = [], [], []
-for i in tqdm(range(1, num_img)): # for number of images
-    label, score, box = [[]]*num_files, [[]]*num_files, [[]]*num_files
+        #여기까지, image_id에 걸맞게 바꾸는 과정
+        if len(predict_list)==0 or len(predict_list)==1:
+            continue
+            
+        predict_list = np.reshape(predict_list, (-1, 6))
+        box_list = []
+        
+        for box in predict_list[:, 2:6].tolist():
+            box[0] = float(box[0]) / image_info['width']
+            box[1] = float(box[1]) / image_info['height']
+            box[2] = float(box[2]) / image_info['width']
+            box[3] = float(box[3]) / image_info['height']
+            box_list.append(box)
+            
+        boxes_list.append(box_list)
+        scores_list.append(list(map(float, predict_list[:, 1].tolist())))
+        labels_list.append(list(map(int, predict_list[:, 0].tolist())))
+    
+#     예측 box가 있다면 이를 ensemble 수행
+    if len(boxes_list):
+        boxes, scores, labels = weighted_boxes_fusion(boxes_list, scores_list, labels_list,weights=weights ,
+        iou_thr=iou_thr,skip_box_thr=skip_box_thr)
+        for box, score, label in zip(boxes, scores, labels):
+            prediction_string += str(int(label)) + ' ' + str(score) + ' ' + str(box[0] * image_info['width']) \
+                + ' ' + str(box[1] * image_info['height']) + ' ' + str(box[2] * image_info['width'])\
+                     + ' ' + str(box[3] * image_info['height']) + ' '
+    
+    prediction_strings.append(prediction_string)
+    file_names.append(image_id)
 
-    for j in range(num_files): # for number of inference files 
-        one_img = inference[j][i][0].split(' ') # 0th = numbers, 1st = img name 
+    submission = pd.DataFrame()
 
-        for k in range(0, len(one_img)-1, 6): 
-            label[j].append(int(one_img[k]))
-            score[j].append(float(one_img[k+1]))
-            box[j].append(([float(one_img[w])/1024. for w in range(k+2, k+6)]))  # normalize for WBF library 
+submission['PredictionString'] = prediction_strings
+submission['image_id'] = file_names
+submission.to_csv('input_file_name.csv',index=None)
 
-    # print(label, score, box)
-    b, s, l = weighted_boxes_fusion(box, score, label, weights=weights, iou_thr=iou_thresh, skip_box_thr=skip_box_thresh)
+submission.head()
 
-    wbf_label.append(l) 
-    wbf_score.append(s) 
-    wbf_box.append(b)
 
-# make a submission file in a csv format 
-f = open('ensemble_file_{}.csv'.format(args.num), 'w') 
-writer = csv.writer(f) 
-writer.writerow(['PredictionString', 'image_id'])
-for i in range(num_img-1): 
-    s = ''
-    for j in range(len(wbf_label[i])): 
-        s += str(int(wbf_label[i][j])) + ' '
-        s += str(wbf_score[i][j]) + ' '
-        for k in range(4): 
-            s += str(wbf_box[i][j][k] * 1024) + ' '
 
-    writer.writerow([s, 'test/{0:04d}.jpg'.format(i)])
