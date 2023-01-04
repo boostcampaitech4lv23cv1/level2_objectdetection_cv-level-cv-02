@@ -1,6 +1,6 @@
 <div align=center>
 
-![header](https://capsule-render.vercel.app/api?type=waving&text=재활용쓰레기%20검출%20대회&color=7F7FD5&fontColor=FFFFFF&fontSize=50&height=200)
+![header](https://capsule-render.vercel.app/api?type=waving&text=재활용%20쓰레기%20검출%20대회&color=7F7FD5&fontColor=FFFFFF&fontSize=50&height=200)
 
 </div> 
 
@@ -32,9 +32,9 @@
 
 ## 1. Task 소개
 
-수많은 쓰레기들이 버려지고 있는데, 이 중에서는 잘못 버려지고 있는 쓰레기들이 상당하다.
-본 대회는, 주어진 이미지로부터 재활용의 쓰레기 종류와 위치를 검출하는 모델이다.
-구체적으로는, 쓰레기 이미지 데이터와 COCO format으로 된 bbox 정보가 주어질 때, **쓰레기의 종류(10개 중 1개)와 그 위치를 pascal-voc 포맷으로 제출한다.**
+- 수많은 쓰레기들이 버려지고 있는데, 이 중에서는 잘못 버려지고 있는 쓰레기들이 상당하다.
+- 본 대회는, 주어진 이미지로부터 재활용의 쓰레기 종류와 위치를 검출하는 모델이다.
+- 구체적으로는, 쓰레기 이미지 데이터와 COCO format으로 된 bbox 정보가 주어질 때, **쓰레기의 종류(10개 중 1개)와 그 위치를 pascal-voc 포맷으로 제출한다.**
 
 ## 2. 작업 환경
 
