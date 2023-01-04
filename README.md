@@ -16,7 +16,7 @@
 </div>
 
 # Result
-- Public 1등 -> Private 1등
+- Public 4등 -> Private 4등
 ![image](https://user-images.githubusercontent.com/81371318/210516357-69bf1b27-7794-4417-be62-5b75d56dae96.png)
 
 
